@@ -1,0 +1,301 @@
+{% extends "templates/web.html" %}
+
+{% block navbar %}
+<style>
+.custom-navbar { background: #fff; padding: 10px 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; font-family: 'Inter', sans-serif; }
+.nav-link { color: #2d2d2d !important; font-weight: 500; padding: 10px 15px !important; font-size: 15px; }
+.btn-login { color: #2557a7; background: transparent; border: 1px solid #2557a7; padding: 8px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; margin-right: 10px; }
+.btn-job-post { background: #2557a7; color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; }
+</style>
+<nav class="navbar navbar-expand-lg custom-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/home2" style="text-decoration: none; display: flex; align-items: center;">
+            <h3 style="margin: 0; color: #2557a7; font-weight: 800; letter-spacing: -0.5px;">ApplyForJob</h3>
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto ml-4">
+                <li class="nav-item"><a class="nav-link" href="/jobs">Find jobs</a></li>
+                <li class="nav-item"><a class="nav-link" href="/home2#contact">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block page_content %}
+<style>
+body { font-family: 'Inter', sans-serif; background-color: #fff; color: #2d2d2d; }
+.details-banner { background: linear-gradient(135deg, #f0f5ff 0%, #e6f0fa 100%); padding: 60px 0; margin-bottom: 40px; border-bottom: 1px solid #dbe7f7;}
+.banner-content { display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 15px;}
+.banner-logo { width: 90px; height: 90px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); float: left; margin-right: 25px; border: 1px solid #eef2f6;}
+.banner-info { margin-left: 115px; }
+.banner-title { font-size: 32px; font-weight: 800; color: #1a1a1a; margin-bottom: 10px; }
+.banner-meta { font-size: 15px; color: #555; display: flex; gap: 20px; align-items: center; flex-wrap: wrap;}
+.banner-meta i { color: #888; margin-right: 5px; }
+.banner-actions { display: flex; gap: 15px; align-items: center; }
+.btn-apply-main { background: #2557a7; color: #fff; padding: 14px 40px; border-radius: 8px; font-weight: 700; font-size: 16px; border: none; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(37, 87, 167, 0.2); }
+.btn-apply-main:hover { background: #1a4282; color: #fff; transform: translateY(-2px); text-decoration: none;}
+.btn-bookmark-large { width: 50px; height: 50px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2557a7; font-size: 18px; border: 1px solid #eef2f6; transition: 0.2s; cursor: pointer; }
+.btn-bookmark-large:hover { background: #f3f5f9; }
+.pill-full-time { background: #dbe7f7; color: #2557a7; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+.main-content { max-width: 1200px; margin: 0 auto; padding: 0 15px 80px 15px; }
+.job-description-area { padding-right: 30px; }
+.desc-title { font-size: 20px; font-weight: 800; color: #1a1a1a; margin-bottom: 25px; }
+.desc-content { font-size: 16px; color: #444; line-height: 1.8; margin-bottom: 40px; }
+.desc-content p { margin-bottom: 15px; }
+.desc-content ul { padding-left: 20px; margin-bottom: 20px; }
+.desc-content li { margin-bottom: 10px; }
+
+.widget { background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 30px; border: 1px solid #eef2f6;}
+.widget-title { font-size: 18px; font-weight: 800; color: #1a1a1a; margin-bottom: 25px; }
+.widget-item { display: flex; gap: 15px; margin-bottom: 20px; }
+.widget-item:last-child { margin-bottom: 0; }
+.widget-icon { color: #2557a7; font-size: 20px; width: 24px; text-align: center; }
+.widget-text h5 { font-size: 13px; font-weight: 500; color: #767676; margin: 0 0 5px 0; }
+.widget-text p { font-size: 15px; font-weight: 600; color: #1a1a1a; margin: 0; }
+
+.comp-top { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+.comp-logo { width: 60px; height: 60px; background: #fff; border-radius: 8px; padding: 5px; display: flex; align-items: center; justify-content: center; border: 1px solid #eaeaea;}
+.comp-name { font-weight: 800; font-size: 16px; color: #1a1a1a; margin-bottom: 5px;}
+.comp-link { color: #2557a7; font-size: 13px; text-decoration: none; font-weight: 600; }
+.comp-detail-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eaeaea; }
+.comp-detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.comp-label { color: #555; font-weight: 500; }
+.comp-value { color: #1a1a1a; font-weight: 600; text-align: right; }
+
+.social-share { display: flex; gap: 10px; margin-top: 40px; border-top: 1px solid #eaeaea; padding-top: 30px; align-items: center; }
+.share-title { font-weight: 700; color: #1a1a1a; margin-right: 15px; font-size: 15px; }
+.share-btn { padding: 8px 20px; border-radius: 6px; color: #fff !important; font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
+.share-btn:hover { opacity: 0.9; text-decoration: none; transform: translateY(-1px);}
+.bg-fb { background: #3b5998; }
+.bg-tw { background: #1da1f2; }
+.bg-pi { background: #bd081c; }
+
+/* Custom Footer */
+.custom-footer { background: #1a1a1a; color: #d1d5db; padding: 70px 0 20px 0; font-family: 'Inter', sans-serif; font-size: 14px; margin-top: 50px;}
+
+.footer-title { color: #fff; font-weight: 700; font-size: 17px; margin-bottom: 25px; }
+.footer-link { color: #a0aec0; text-decoration: none; display: block; margin-bottom: 14px; transition: 0.2s;}
+.footer-link:hover { color: #fff; text-decoration: none; padding-left: 5px;}
+.footer-contact-text { margin-bottom: 18px; line-height: 1.6; color: #a0aec0;}
+.footer-contact-text strong { color: #fff; font-size: 15px;}
+.footer-bottom { border-top: 1px solid #333; margin-top: 50px; padding-top: 25px; text-align: center; font-size: 13px; color: #888;}
+.footer-bottom a { color: #d1d5db; text-decoration: none; font-weight: 500;}
+
+@media (max-width: 768px) { .banner-content { flex-direction: column; text-align: center; } .banner-logo { float: none; margin: 0 auto 20px auto; } .banner-info { margin-left: 0; margin-bottom: 25px; } .banner-meta { justify-content: center; } .job-description-area { padding-right: 0; } }
+</style>
+
+{% set job_name = frappe.form_dict.id %}
+{% set job = frappe.get_doc('Job Opening', job_name) if job_name else None %}
+
+{% if job %}
+<div class="details-banner">
+    <div class="banner-content">
+        <div style="flex: 1;">
+            <div class="banner-logo">
+                {% if job.company_logo %}
+                    <img src="{{ job.company_logo }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                {% else %}
+                    <i class="fa fa-building" style="font-size: 32px; color: #b3b3b3;"></i>
+                {% endif %}
+            </div>
+            <div class="banner-info">
+                <h1 class="banner-title">{{ job.job_title or job.designation or job.name }}</h1>
+                <div class="banner-meta">
+                    <span><i class="fa fa-briefcase"></i> {{ job.custom_category or 'Job Category' }}</span>
+                    <span><i class="fa fa-clock-o"></i> {{ frappe.utils.formatdate(job.creation) }}</span>
+                    <span class="pill-full-time">{{ job.custom_job_type or 'Full Time' }}</span>
+                </div>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        <div class="banner-actions mt-4 mt-md-0">
+            <a href="/job_application?job_title={{ job.name }}" class="btn-apply-main">Apply Now</a>
+            <div class="btn-bookmark-large"><i class="fa fa-bookmark-o"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="row">
+        <!-- Left Column: Description -->
+        <div class="col-lg-8 mb-5">
+            <div class="job-description-area">
+                <h3 class="desc-title">Job Description</h3>
+                <div class="desc-content">
+                    {{ job.description or 'No detailed description provided for this job opening.' }}
+                </div>
+                
+                <div class="social-share">
+                    <span class="share-title">Share this post</span>
+                    <a href="#" class="share-btn bg-fb"><i class="fa fa-facebook"></i> Facebook</a>
+                    <a href="#" class="share-btn bg-tw"><i class="fa fa-twitter"></i> Twitter</a>
+                    <a href="#" class="share-btn bg-pi"><i class="fa fa-pinterest"></i> Pinterest</a>
+                </div>
+                
+                <!-- Related Jobs Section -->
+                <div class="mt-5 pt-4">
+                    <h3 class="desc-title">Related Jobs</h3>
+                    {% set related = frappe.get_all('Job Opening', filters={'status': 'Open', 'custom_category': job.custom_category, 'name': ('!=', job.name)}, fields=['*'], limit_page_length=2) %}
+                    {% if related %}
+                        {% for rjob in related %}
+                        <div style="background: #fff; border: 1px solid #eef2f6; border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 50px; height: 50px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 5px;">
+                                    {% if rjob.company_logo %}<img src="{{ rjob.company_logo }}" style="max-width: 100%; max-height: 100%;">{% else %}<i class="fa fa-building" style="color: #b3b3b3;"></i>{% endif %}
+                                </div>
+                                <div>
+                                    <a href="/job-details?id={{ rjob.name }}" style="font-weight: 700; color: #1a1a1a; font-size: 16px; text-decoration: none;">{{ rjob.job_title }}</a>
+                                    <div style="font-size: 13px; color: #767676; margin-top: 4px;"><i class="fa fa-briefcase"></i> {{ rjob.custom_category }}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <span style="background: #e6f0fa; color: #2557a7; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">{{ rjob.custom_job_type or 'Full Time' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #767676;">No related jobs in this category right now.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Sidebar -->
+        <div class="col-lg-4">
+            <!-- Job Overview Widget -->
+            <div class="widget">
+                <h4 class="widget-title">Job Overview</h4>
+                
+                <div class="widget-item">
+                    <div class="widget-icon"><i class="fa fa-calendar"></i></div>
+                    <div class="widget-text">
+                        <h5>Date Posted</h5>
+                        <p>{{ frappe.utils.formatdate(job.creation) }}</p>
+                    </div>
+                </div>
+                
+                <!-- If Expiration Date exists in custom fields, show it -->
+                <div class="widget-item">
+                    <div class="widget-icon"><i class="fa fa-hourglass-half"></i></div>
+                    <div class="widget-text">
+                        <h5>Expiration date</h5>
+                        <p>Apply Asap</p>
+                    </div>
+                </div>
+                
+                <div class="widget-item">
+                    <div class="widget-icon"><i class="fa fa-map-marker"></i></div>
+                    <div class="widget-text">
+                        <h5>Location</h5>
+                        <p>{{ job.location or job.city or 'Remote' }}</p>
+                    </div>
+                </div>
+                
+                {% if job.custom_salary %}
+                <div class="widget-item">
+                    <div class="widget-icon"><i class="fa fa-money"></i></div>
+                    <div class="widget-text">
+                        <h5>Salary</h5>
+                        <p>{{ job.custom_salary }} / month</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Company Profile Widget -->
+            <div class="widget">
+                <div class="comp-top">
+                    <div class="comp-logo">
+                        {% if job.company_logo %}
+                            <img src="{{ job.company_logo }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                        {% else %}
+                            <i class="fa fa-building" style="font-size: 24px; color: #b3b3b3;"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="comp-name">{{ job.company or 'Company Name' }}</div>
+                        <a href="#" class="comp-link">View Company Profile</a>
+                    </div>
+                </div>
+                
+                <div class="comp-detail-row">
+                    <span class="comp-label">Categories:</span>
+                    <span class="comp-value">{{ job.custom_category or 'Uncategorized' }}</span>
+                </div>
+                
+                <div class="comp-detail-row">
+                    <span class="comp-label">Location:</span>
+                    <span class="comp-value">{{ job.location or job.city or '-' }}</span>
+                </div>
+                
+                <div class="comp-detail-row">
+                    <span class="comp-label">Socials:</span>
+                    <span class="comp-value">
+                        <i class="fa fa-facebook-square" style="color: #3b5998; font-size: 16px; margin-left: 5px;"></i>
+                        <i class="fa fa-twitter-square" style="color: #1da1f2; font-size: 16px; margin-left: 5px;"></i>
+                        <i class="fa fa-linkedin-square" style="color: #0077b5; font-size: 16px; margin-left: 5px;"></i>
+                    </span>
+                </div>
+            </div>
+            
+            <a href="/job_application?job_title={{ job.name }}" class="btn-apply-main" style="width: 100%; text-align: center; display: block; padding: 16px; font-size: 18px;">Apply For This Job</a>
+            
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="container text-center" style="padding: 100px 0;">
+    <h2>Job Not Found</h2>
+    <a href="/jobs" class="btn btn-primary mt-3">Back to Jobs</a>
+</div>
+{% endif %}
+
+<footer class="custom-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div>
+                    <h3 style="margin: 0; color: #fff; font-weight: 800; letter-spacing: -1px; font-size: 28px;">
+                        <span style="color: #3b82f6;">Apply</span>ForJob
+                    </h3>
+                    <p style="color: #a0aec0; margin-top: 15px; font-size: 14px; line-height: 1.6;">
+                        Connecting top talent with the best companies.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-4">
+                <div class="footer-title">For Candidates</div>
+                <a href="/jobs" class="footer-link">Browse Jobs</a>
+                <a href="/login" class="footer-link">Candidate Dashboard</a>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-4">
+                <div class="footer-title">For Employers</div>
+                <a href="/login" class="footer-link">Employer Dashboard</a>
+                <a href="/job-opening/new" class="footer-link">Submit Job</a>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-4">
+                <div class="footer-title">About Us</div>
+                <a href="#contact" class="footer-link">Contact Us</a>
+                <a href="#" class="footer-link">About Us</a>
+                <a href="#" class="footer-link">Terms</a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="footer-title">Contact us</div>
+                <div class="footer-contact-text">
+                    <strong>Call us at</strong><br>
+                    +91 9152473308
+                </div>
+                <div class="footer-contact-text">
+                    <strong>Our Address</strong><br>
+                    810, B Wing, Punit Tower 2, Sector 1, CBD Belapur, Navi Mumbai.
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            Developed | Maintained | Managed | Copyright © by <a href="#">CBT IT Solutions Pvt Ltd.</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}

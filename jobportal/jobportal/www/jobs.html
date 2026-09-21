@@ -1,0 +1,175 @@
+{% extends "templates/web.html" %}
+
+{% block navbar %}
+<style>
+.custom-navbar { background: #fff; padding: 10px 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; font-family: 'Inter', sans-serif; }
+.nav-link { color: #2d2d2d !important; font-weight: 500; padding: 10px 15px !important; font-size: 15px; }
+.btn-login { color: #2557a7; background: transparent; border: 1px solid #2557a7; padding: 8px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; margin-right: 10px; }
+.btn-job-post { background: #2557a7; color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; }
+</style>
+<nav class="navbar navbar-expand-lg custom-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/home2" style="text-decoration: none; display: flex; align-items: center;">
+            <h3 style="margin: 0; color: #2557a7; font-weight: 800; letter-spacing: -0.5px;">ApplyForJob</h3>
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto ml-4">
+                <li class="nav-item"><a class="nav-link" href="/jobs" style="border-bottom: 2px solid #2557a7; color: #2557a7 !important;">Find jobs</a></li>
+                <li class="nav-item"><a class="nav-link" href="/home2#contact">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block page_content %}
+<style>
+body { font-family: 'Inter', sans-serif; background-color: #f4f7fa; color: #2d2d2d; }
+.page-container { padding: 50px 15px; max-width: 1300px; margin: 0 auto; }
+.filter-sidebar { background: #fff; border: 1px solid #eef2f6; border-radius: 12px; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.02);}
+.filter-group { margin-bottom: 25px; border-bottom: 1px solid #eef2f6; padding-bottom: 20px;}
+.filter-group:last-child { border-bottom: none; }
+.filter-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 15px; }
+.filter-input { width: 100%; border: 1px solid #e0e6ed; border-radius: 8px; padding: 12px 15px; font-size: 14px; margin-bottom: 10px; outline: none; background: #fafbfc; transition: 0.2s;}
+.filter-input:focus { border-color: #2557a7; background: #fff; box-shadow: 0 0 0 3px rgba(37, 87, 167, 0.1);}
+.custom-control-label { font-size: 14.5px; color: #444; font-weight: 500; cursor: pointer; padding-left: 8px;}
+.btn-filter { background: #2557a7; color: white; width: 100%; padding: 14px; border-radius: 8px; font-weight: 700; border: none; transition: 0.2s; margin-top: 10px;}
+.btn-filter:hover { background: #164081; transform: translateY(-2px);}
+.job-grid-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 0 10px;}
+
+/* NEW MODERN JOB CARD DESIGN */
+.job-card { background: #fff; border: 1px solid #eef2f6; border-radius: 12px; padding: 24px; margin-bottom: 20px; transition: all 0.3s ease; cursor: pointer; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.02); height: 100%; }
+.job-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-color: #2557a7; transform: translateY(-3px); }
+.bookmark-btn { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: #f3f5f9; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 14px; transition: 0.2s; }
+.bookmark-btn:hover { background: #e0e6f1; color: #2557a7; }
+.card-logo { width: 60px; height: 60px; border-radius: 10px; border: 1px solid #f1f1f1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 8px; float: left; margin-right: 18px; background: #fff; }
+.card-content { margin-left: 78px; min-height: 60px; }
+.card-title { font-size: 19px; font-weight: 700; color: #2557a7; text-decoration: none; margin-bottom: 8px; display: inline-block; padding-right: 40px; line-height: 1.3; }
+.card-meta { font-size: 14px; color: #555; margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+.card-meta span { display: flex; align-items: center; gap: 6px; }
+.card-meta i { color: #a0a0a0; font-size: 15px; }
+.salary-text { font-size: 14px; color: #444; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 6px; }
+.pill-full-time { background: #e6f0fa; color: #2557a7; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-block; }
+</style>
+
+<div class="container-fluid page-container">
+    <div class="row">
+        <!-- LEFT SIDEBAR -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="filter-sidebar">
+                <form method="GET" action="/jobs" id="filterForm">
+                    <div class="filter-group">
+                        <div class="filter-title">Search</div>
+                        <input type="text" name="search" class="filter-input" placeholder="Title, keyword or location" value="{{ frappe.form_dict.search or '' }}">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <div class="filter-title">Category</div>
+                        <select name="category" class="filter-input">
+                            <option value="">All Categories</option>
+                            {% set master_categories = frappe.get_all('Job Category', pluck='name') %}
+                            {% for cat in master_categories %}
+                            <option value="{{ cat }}" {% if frappe.form_dict.category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-title">Job Type</div>
+                        {% set meta = frappe.get_meta('Job Opening') %}
+                        {% for f in meta.fields %}
+                            {% if f.fieldname == 'custom_job_type' and f.options %}
+                                {% for type in f.options.split('\n') %}
+                                    {% if type.strip() %}
+                                    <div class="custom-control custom-radio mb-2">
+                                        <input type="radio" id="type_{{ loop.index }}" name="job_type" class="custom-control-input" value="{{ type.strip() }}" {% if frappe.form_dict.job_type == type.strip() %}checked{% endif %}>
+                                        <label class="custom-control-label" for="type_{{ loop.index }}">{{ type.strip() }}</label>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="filter-group" style="border-bottom: none;">
+                        <div class="filter-title">Experience Level</div>
+                        {% for f in meta.fields %}
+                            {% if f.fieldname == 'custom_experience' and f.options %}
+                                {% for exp in f.options.split('\n') %}
+                                    {% if exp.strip() %}
+                                    <div class="custom-control custom-radio mb-2">
+                                        <input type="radio" id="exp_{{ loop.index }}" name="experience" class="custom-control-input" value="{{ exp.strip() }}" {% if frappe.form_dict.experience == exp.strip() %}checked{% endif %}>
+                                        <label class="custom-control-label" for="exp_{{ loop.index }}">{{ exp.strip() }}</label>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn-filter">Filter Jobs</button>
+                    <a href="/jobs" class="btn btn-light mt-3" style="width: 100%; font-weight: 600; border: 1px solid #e0e6ed; padding: 12px; border-radius: 8px; color: #555;">Clear Filters</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT CONTENT -->
+        <div class="col-lg-9 col-md-8">
+            {% set conditions = {'status': 'Open'} %}
+            {% if frappe.form_dict.category %} {% set _ = conditions.update({'custom_category': frappe.form_dict.category}) %} {% endif %}
+            {% if frappe.form_dict.job_type %} {% set _ = conditions.update({'custom_job_type': frappe.form_dict.job_type}) %} {% endif %}
+            {% if frappe.form_dict.experience %} {% set _ = conditions.update({'custom_experience': frappe.form_dict.experience}) %} {% endif %}
+            
+            {% set my_jobs = frappe.get_all('Job Opening', filters=conditions, fields=['*']) %}
+            {% set final_jobs = [] %}
+            {% set search_q = (frappe.form_dict.search or '') | lower %}
+            
+            {% for j in my_jobs %}
+                {% set title_match = not search_q or search_q in (j.job_title|default('')|lower) or search_q in (j.designation|default('')|lower) or search_q in (j.company|default('')|lower) or search_q in (j.location|default('')|lower) or search_q in (j.city|default('')|lower) %}
+                {% if title_match %}{% set _ = final_jobs.append(j) %}{% endif %}
+            {% endfor %}
+
+            <div class="job-grid-header">
+                <span style="font-weight: 600; color: #1a1a1a; font-size: 16px;">Showing {{ final_jobs|length }} results</span>
+                <span style="font-size: 14px; color: #767676;">Sort by: <strong style="color: #1a1a1a;">Newest</strong></span>
+            </div>
+
+            <div class="row">
+                {% if final_jobs %}
+                    {% for job in final_jobs %}
+                    <div class="col-xl-6 col-lg-12 mb-4">
+                        <div class="job-card" onclick="window.location.href='/job-details?id={{ job.name }}'">
+                            <div class="bookmark-btn"><i class="fa fa-bookmark-o"></i></div>
+                            <div class="card-logo">
+                                {% if job.company_logo %}
+                                    <img src="{{ job.company_logo }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                {% else %}
+                                    <i class="fa fa-building" style="font-size: 24px; color: #b3b3b3;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="card-content">
+                                <a href="/job-details?id={{ job.name }}" class="card-title">{{ job.job_title or job.designation or job.name }}</a>
+                                <div class="card-meta">
+                                    <span><i class="fa fa-briefcase"></i> {{ job.custom_category or job.company or 'Company' }}</span>
+                                    <span><i class="fa fa-map-marker"></i> {{ job.location or job.city or 'Remote' }}</span>
+                                </div>
+                                <div class="pill-full-time">{{ job.custom_job_type or 'Full Time' }}</div>
+                            </div>
+                            <div style="clear: both;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div style="padding: 80px 20px; text-align: center; background: #fff; border-radius: 12px; border: 1px solid #eef2f6; margin-top: 10px;">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" style="width: 80px; opacity: 0.2; margin-bottom: 20px;">
+                            <h4 style="color: #1a1a1a; font-weight: 700;">No jobs found</h4>
+                            <p style="color: #767676; margin-bottom: 25px;">Try adjusting your search or filters to find what you're looking for.</p>
+                            <a href="/jobs" class="btn-filter" style="text-decoration: none; padding: 12px 30px; display: inline-block; width: auto;">Clear all filters</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

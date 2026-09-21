@@ -1,0 +1,717 @@
+{% extends "templates/web.html" %}
+
+{% block navbar %}
+<style>
+    .custom-navbar {
+        background: #fff;
+        padding: 10px 20px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .nav-link {
+        color: #2d2d2d !important;
+        font-weight: 500;
+        padding: 10px 15px !important;
+        font-size: 15px;
+    }
+
+    .btn-login {
+        color: #2557a7;
+        background: transparent;
+        border: 1px solid #2557a7;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .btn-job-post {
+        background: #2557a7;
+        color: #fff;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+    }
+</style>
+<nav class="navbar navbar-expand-lg custom-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/home2" style="text-decoration: none; display: flex; align-items: center;">
+            <h3 style="margin: 0; color: #2557a7; font-weight: 800; letter-spacing: -0.5px;">ApplyForJob</h3>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#customNavbar"
+            style="border: none; background: transparent;"><i class="fa fa-bars"
+                style="font-size: 24px; color: #2d2d2d;"></i></button>
+        <div class="collapse navbar-collapse" id="customNavbar">
+            <ul class="navbar-nav mr-auto ml-4">
+                <li class="nav-item"><a class="nav-link" href="/jobs">Find jobs</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+            </ul>
+            <div class="d-flex align-items-center ml-auto mt-3 mt-lg-0">
+                <a href="/login" class="btn-login">Sign in</a>
+                {% set has_employer = frappe.get_all('Has Role', filters={'parent': frappe.session.user, 'role':
+                'Employer'}, limit=1) %}
+                {% if has_employer %}
+                <a href="/post-a-job/new" class="btn-job-post">Post a Job</a>
+                {% else %}
+                <a href="/employer-registration/new" class="btn-job-post">Employers / Post Job</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block page_content %}
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-up {
+        animation: fadeInUp 0.7s ease forwards;
+        opacity: 0;
+    }
+
+    .d-1 {
+        animation-delay: 0.1s;
+    }
+
+    .d-2 {
+        animation-delay: 0.3s;
+    }
+
+    .d-3 {
+        animation-delay: 0.5s;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fff;
+        color: #2d2d2d;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    .hero-section {
+        padding: 100px 0 80px 0;
+        background: linear-gradient(135deg, #f0f5ff 0%, #ffffff 100%);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-shape-1 {
+        position: absolute;
+        top: -50px;
+        left: -50px;
+        width: 250px;
+        height: 250px;
+        background: rgba(37, 87, 167, 0.04);
+        border-radius: 50%;
+    }
+
+    .hero-shape-2 {
+        position: absolute;
+        bottom: 50px;
+        right: -50px;
+        width: 300px;
+        height: 300px;
+        background: rgba(37, 87, 167, 0.03);
+        border-radius: 50%;
+    }
+
+    .hero-badge {
+        background: #e6f0fa;
+        color: #2557a7;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 700;
+        display: inline-block;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(37, 87, 167, 0.1);
+    }
+
+    .hero-title {
+        font-size: 52px;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+        letter-spacing: -1.5px;
+        line-height: 1.2;
+        white-space: nowrap;
+        width: max-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-title span {
+        color: #2557a7;
+    }
+
+    .hero-subtitle {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 40px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    /* Search Bar Alignment Fixed */
+    .search-box-wrapper {
+        display: flex;
+        width: 100%;
+        max-width: 850px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #eef2f6;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(37, 87, 167, 0.08);
+        padding: 8px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .search-input-group {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        padding: 0 20px;
+        position: relative;
+    }
+
+    .search-input-group:first-child {
+        border-right: 1px solid #eef2f6;
+    }
+
+    .search-icon {
+        color: #2557a7;
+        font-size: 18px;
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-input-group input {
+        border: none;
+        width: 100%;
+        height: 50px;
+        font-size: 16px;
+        font-weight: 500;
+        outline: none;
+        color: #1a1a1a;
+        background: transparent;
+    }
+
+    .search-input-group input::placeholder {
+        color: #8898aa;
+        font-weight: 400;
+    }
+
+    .btn-find-jobs {
+        background: #2557a7;
+        color: white;
+        border: none;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 0 35px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        height: 50px;
+        white-space: nowrap;
+    }
+
+    .btn-find-jobs:hover {
+        background: #164081;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 87, 167, 0.2);
+    }
+
+    .popular-searches {
+        margin-top: 50px;
+        text-align: center;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .search-pill {
+        display: inline-block;
+        background: #fff;
+        border: 1px solid #eef2f6;
+        padding: 10px 20px;
+        border-radius: 50px;
+        margin: 5px;
+        color: #444;
+        font-weight: 500;
+        text-decoration: none;
+        font-size: 14px;
+        transition: 0.2s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    }
+
+    .search-pill:hover {
+        background: #2557a7;
+        color: #fff;
+        text-decoration: none;
+        border-color: #2557a7;
+    }
+
+    .jobs-section {
+        padding: 80px 0;
+        max-width: 1100px;
+        margin: 0 auto;
+        min-height: 50vh;
+    }
+
+    .job-card {
+        background: #fff;
+        border: 1px solid #eef2f6;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        height: 100%;
+    }
+
+    .job-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        border-color: #2557a7;
+        transform: translateY(-3px);
+    }
+
+    .bookmark-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f3f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    .bookmark-btn:hover {
+        background: #e0e6f1;
+        color: #2557a7;
+    }
+
+    .card-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        border: 1px solid #f1f1f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        padding: 8px;
+        float: left;
+        margin-right: 18px;
+        background: #fff;
+    }
+
+    .card-content {
+        margin-left: 78px;
+        min-height: 60px;
+    }
+
+    .card-title {
+        font-size: 19px;
+        font-weight: 700;
+        color: #2557a7;
+        text-decoration: none;
+        margin-bottom: 8px;
+        display: inline-block;
+        padding-right: 40px;
+        line-height: 1.3;
+    }
+
+    .card-meta {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 15px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .card-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .card-meta i {
+        color: #a0a0a0;
+        font-size: 15px;
+    }
+
+    .pill-full-time {
+        background: #e6f0fa;
+        color: #2557a7;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 36px;
+            white-space: normal;
+        }
+
+        .search-box-wrapper {
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .search-input-group {
+            border-right: none;
+            border-bottom: 1px solid #eef2f6;
+            padding: 15px 10px;
+        }
+
+        .btn-find-jobs {
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 8px;
+            width: 100%;
+        }
+    }
+
+    /* PREMIUM FOOTER STYLES */
+    footer.web-footer {
+        display: none !important;
+    }
+
+    .custom-footer {
+        background: #0f172a;
+        color: #94a3b8;
+        padding: 40px 0 20px 0;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        margin-top: 40px;
+        border-top: 4px solid #2557a7;
+    }
+
+    .footer-brand {
+        margin: 0;
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: -1px;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+
+    .footer-brand span {
+        color: #3b82f6;
+    }
+
+    .footer-desc {
+        color: #94a3b8;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    .social-icons {
+        display: flex;
+        gap: 15px;
+    }
+
+    .social-icons a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        border-radius: 50%;
+        text-decoration: none;
+        transition: 0.3s ease;
+    }
+
+    .social-icons a:hover {
+        background: #2557a7;
+        transform: translateY(-3px);
+    }
+
+    .footer-title {
+        color: #f8fafc;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 18px;
+        position: relative;
+        padding-bottom: 8px;
+    }
+
+    .footer-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 30px;
+        height: 2px;
+        background: #2557a7;
+        border-radius: 2px;
+    }
+
+    .footer-link {
+        color: #cbd5e1;
+        text-decoration: none;
+        display: block;
+        margin-bottom: 10px;
+        transition: 0.3s;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .footer-link:hover {
+        color: #3b82f6;
+        text-decoration: none;
+        padding-left: 8px;
+    }
+
+    .footer-contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+        line-height: 1.5;
+        font-size: 14px;
+    }
+
+    .footer-contact-item i {
+        color: #3b82f6;
+        font-size: 18px;
+        margin-top: 3px;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 30px;
+        padding-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .footer-bottom a {
+        color: #cbd5e1;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .footer-bottom a:hover {
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .footer-bottom {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+    }
+</style>
+
+<div class="hero-section animate-up d-1">
+    <div class="hero-shape-1"></div>
+    <div class="hero-shape-2"></div>
+    <div class="container">
+        <div class="hero-badge">🚀 Over 10,000+ Jobs Available</div>
+        <h1 class="hero-title">Discover Your <span>Dream Job Today</h1>
+        <p class="hero-subtitle">Find thousands of job opportunities with top companies. It's your future, take control
+            and apply today.</p>
+
+        <form action="/jobs" method="GET" class="search-box-wrapper">
+            <div class="search-input-group">
+                <span class="search-icon"><i class="fa fa-search"></i></span>
+                <input type="text" name="search" placeholder="Job title, keywords, or company">
+            </div>
+            <div class="search-input-group">
+                <span class="search-icon"><i class="fa fa-map-marker"></i></span>
+                <input type="text" name="location" placeholder="City, state, zip code">
+            </div>
+            <button type="submit" class="btn-find-jobs">Find jobs</button>
+        </form>
+
+        <div class="popular-searches animate-up d-2">
+            <h4 style="font-size: 14px; font-weight: 700; color: #595959; margin-bottom: 15px;">Popular Categories</h4>
+            <div>
+                {% set master_categories = frappe.get_all('Job Category', pluck='name', limit_page_length=5) %}
+                {% for cat in master_categories %}
+                <a href="/jobs?category={{ cat|urlencode }}" class="search-pill">{{ cat }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="find-jobs" class="jobs-section animate-up d-3">
+    <div class="container">
+        <h2 style="font-size: 28px; font-weight: 800; color: #1a1a1a; margin-bottom: 40px; text-align: center;">Latest
+            Openings</h2>
+
+        {% set my_jobs = frappe.get_all('Job Opening', filters={'status': 'Open'}, fields=['*'], limit_page_length=10)
+        %}
+
+        <div class="row">
+            {% if my_jobs %}
+            {% for job in my_jobs %}
+            <div class="col-lg-6 mb-4">
+                <div class="job-card" onclick="window.location.href='/job-details?id={{ job.name }}'">
+                    <div class="bookmark-btn"><i class="fa fa-bookmark-o"></i></div>
+                    <div class="card-logo">
+                        {% if job.company_logo %}
+                        <img src="{{ job.company_logo }}"
+                            style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                        {% else %}
+                        <i class="fa fa-building" style="font-size: 24px; color: #b3b3b3;"></i>
+                        {% endif %}
+                    </div>
+                    <div class="card-content">
+                        <a href="/job-details?id={{ job.name }}" class="card-title">{{ job.job_title or job.designation
+                            or job.name }}</a>
+                        <div class="card-meta">
+                            <span><i class="fa fa-briefcase"></i> {{ job.custom_category or job.company or 'Company'
+                                }}</span>
+                            <span><i class="fa fa-map-marker"></i> {{ job.location or job.city or 'Remote' }}</span>
+                        </div>
+                        <div class="pill-full-time">{{ job.custom_job_type or 'Full Time' }}</div>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-12 text-center" style="padding: 50px;">
+                <p style="color: #767676; font-size: 16px;">No jobs found at the moment.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="/jobs" class="btn-job-post"
+                style="padding: 14px 40px; font-size: 16px; background: #fff; color: #2557a7; border: 2px solid #2557a7;">Browse
+                All Jobs</a>
+        </div>
+    </div>
+</div>
+
+<footer class="custom-footer" id="contact">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div>
+                    <h3 class="footer-brand">
+                        <span>Apply</span>ForJob
+                    </h3>
+                    <p class="footer-desc">
+                        Empowering careers by connecting top talent with industry-leading companies. Your journey to a
+                        dream job starts here.
+                    </p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fa fa-facebook"></i></a>
+                        <a href="#"><i class="fa fa-twitter"></i></a>
+                        <a href="#"><i class="fa fa-linkedin"></i></a>
+                        <a href="#"><i class="fa fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-4">
+                <div class="footer-title">Candidates</div>
+                <a href="/jobs" class="footer-link">Browse Jobs</a>
+                <a href="/login" class="footer-link">Candidate Dashboard</a>
+                <a href="#" class="footer-link">Saved Jobs</a>
+                <a href="#" class="footer-link">Job Alerts</a>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-4">
+                <div class="footer-title">Employers</div>
+                <a href="/me" class="footer-link">Employer Dashboard</a>
+                {% set has_employer = frappe.get_all('Has Role', filters={'parent': frappe.session.user, 'role':
+                'Employer'}, limit=1) %}
+                {% if has_employer %}
+                <a href="/post-a-job/new" class="footer-link">Post a Job</a>
+                {% else %}
+                <a href="/employer-registration/new" class="footer-link">Post a Job</a>
+                {% endif %}
+                <a href="#" class="footer-link">Browse Resumes</a>
+                <a href="#" class="footer-link">Pricing Plans</a>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="footer-title">Contact Us</div>
+                <div class="footer-contact-item">
+                    <i class="fa fa-map-marker"></i>
+                    <div>
+                        <strong style="color: #fff; display: block; margin-bottom: 2px;">Head Office</strong>
+                        810, B Wing, Punit Tower 2,<br>Sector 1, CBD Belapur,<br>Navi Mumbai.
+                    </div>
+                </div>
+                <div class="footer-contact-item">
+                    <i class="fa fa-phone"></i>
+                    <div>
+                        <strong style="color: #fff; display: block; margin-bottom: 2px;">Call Us</strong>
+                        +91 9152473308
+                    </div>
+                </div>
+                <div class="footer-contact-item">
+                    <i class="fa fa-envelope"></i>
+                    <div>
+                        <strong style="color: #fff; display: block; margin-bottom: 2px;">Email Us</strong>
+                        info@cbtitsolutions.com
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>
+                &copy; 2026 ApplyForJob. All rights reserved.
+            </div>
+            <div>
+                Developed & Managed by <a href="#">CBT IT Solutions Pvt Ltd.</a>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}
